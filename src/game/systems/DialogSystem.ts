@@ -92,6 +92,8 @@ export class DialogSystem {
     this.onComplete = onComplete;
     this._active = true;
     this.container.setVisible(true);
+    this.scene.game.registry.set('dialogAdvance', () => this.handleAdvance());
+    this.scene.game.events.emit('dialog-active');
     this.showEntry();
   }
 
@@ -159,6 +161,8 @@ export class DialogSystem {
     this._active = false;
     this.container.setVisible(false);
     this.typingTimer?.destroy();
+    this.scene.game.registry.remove('dialogAdvance');
+    this.scene.game.events.emit('dialog-inactive');
   }
 
   get active() {
