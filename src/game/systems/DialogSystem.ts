@@ -35,7 +35,7 @@ export class DialogSystem {
     const boxW = w - 20;
 
     this.bg = scene.add.graphics();
-    this.bg.fillStyle(0x1a0005, 0.93);
+    this.bg.fillStyle(0x1a0005, 0.67);
     this.bg.fillRoundedRect(boxX, boxY, boxW, boxH, 8);
     this.bg.lineStyle(3, 0xC00000, 1);
     this.bg.strokeRoundedRect(boxX, boxY, boxW, boxH, 8);
