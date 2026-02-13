@@ -127,7 +127,7 @@ const LoveLetter = () => {
 
           <p style={{ color: '#FF8BC1', fontStyle: 'italic' }}>
             Selamat Hari Valentine, sayangku. Kamu adalah hadiah terindah
-            yang pernah aku terima dari semesta.
+            yang pernah aku terima dari semesta. 
           </p>
 
           <p className="text-right mt-8" style={{ color: '#FF6B96' }}>
