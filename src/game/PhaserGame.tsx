@@ -57,11 +57,14 @@ const PhaserGame = () => {
 
       // Requirement: show joystick when viewport shrinks to ~half of browser width (compared to initial load).
       const isHalfOrLess = w <= baseline * 0.5;
+      // Also cover cases where app already opened in split-screen/small width:
+      // compare against available screen width as a rough proxy.
+      const isHalfOfScreenOrLess = w <= window.screen.availWidth * 0.5;
 
       // Extra: mobile-like fallback.
       const isMobileLike = w < 720 || h > w;
 
-      setShowJoystick(isHalfOrLess || isMobileLike);
+      setShowJoystick(isHalfOrLess || isHalfOfScreenOrLess || isMobileLike);
     };
 
     compute();
