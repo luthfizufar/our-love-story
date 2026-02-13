@@ -3,12 +3,15 @@ import Phaser from 'phaser';
 import { gameConfig } from './config';
 import { audioSystem } from './systems/AudioSystem';
 import LoveLetter from '@/components/LoveLetter';
+import VirtualJoystick, { type VirtualJoystickAxis } from '@/components/VirtualJoystick';
 
 const PhaserGame = () => {
   const gameRef = useRef<Phaser.Game | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [showChoice, setShowChoice] = useState(false);
   const [showLetter, setShowLetter] = useState(false);
+  const baselineWidthRef = useRef<number | null>(null);
+  const [showJoystick, setShowJoystick] = useState(false);
 
   useEffect(() => {
     if (!containerRef.current || gameRef.current) return;
@@ -27,7 +30,13 @@ const PhaserGame = () => {
         canvas.style.webkitTapHighlightColor = 'transparent';
       }
     });
-      
+
+    game.events.on('show-choice', () => setShowChoice(true));
+    game.events.on('show-letter', () => {
+      setShowChoice(false);
+      setShowLetter(true);
+    });
+
     return () => {
       game.events.off('show-choice');
       game.events.off('show-letter');
@@ -38,17 +47,47 @@ const PhaserGame = () => {
     };
   }, []);
 
+  useEffect(() => {
+    if (baselineWidthRef.current === null) baselineWidthRef.current = window.innerWidth;
+
+    const compute = () => {
+      const baseline = baselineWidthRef.current ?? window.innerWidth;
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+
+      // Requirement: show joystick when viewport shrinks to ~half of browser width (compared to initial load).
+      const isHalfOrLess = w <= baseline * 0.5;
+
+      // Extra: mobile-like fallback.
+      const isMobileLike = w < 720 || h > w;
+
+      setShowJoystick(isHalfOrLess || isMobileLike);
+    };
+
+    compute();
+    window.addEventListener('resize', compute);
+    return () => window.removeEventListener('resize', compute);
+  }, []);
+
   const handleChoice = useCallback(() => {
     setShowChoice(false);
     gameRef.current?.events.emit('choice-made');
   }, []);
 
+  const handleJoystick = useCallback((axis: VirtualJoystickAxis) => {
+    gameRef.current?.events.emit('virtual-joystick', axis);
+  }, []);
+
   return (
     <div className="relative w-full h-screen flex items-center justify-center overflow-hidden"
       style={{ background: 'linear-gradient(180deg, #0a0000 0%, #1a0005 100%)' }}>
-      <div ref={containerRef} className="relative" />
+      <div ref={containerRef} className="relative" style={{ touchAction: 'none' }} />
       {showChoice && <ChoiceOverlay onChoose={handleChoice} />}
       {showLetter && <LoveLetter />}
+      <VirtualJoystick
+        visible={showJoystick && !showChoice && !showLetter}
+        onChange={handleJoystick}
+      />
     </div>
   );
 };
