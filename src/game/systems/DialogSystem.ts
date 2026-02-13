@@ -130,18 +130,21 @@ export class DialogSystem {
     this.promptText.setVisible(true);
   }
 
+  private handleAdvance() {
+    if (!this._active) return;
+    if (this.isTyping) {
+      this.skipTyping();
+    } else {
+      audioSystem.playAdvanceSfx();
+      this.currentIndex++;
+      this.showEntry();
+    }
+  }
+
   update() {
     if (!this._active) return;
-    const spacePressed = Phaser.Input.Keyboard.JustDown(this.spaceKey);
-    const pointerPressed = this.scene.input.activePointer.justDown;
-    if (spacePressed || pointerPressed) {
-      if (this.isTyping) {
-        this.skipTyping();
-      } else {
-        audioSystem.playAdvanceSfx();
-        this.currentIndex++;
-        this.showEntry();
-      }
+    if (Phaser.Input.Keyboard.JustDown(this.spaceKey)) {
+      this.handleAdvance();
     }
   }
 
@@ -149,9 +152,14 @@ export class DialogSystem {
     this._active = false;
     this.container.setVisible(false);
     this.typingTimer?.destroy();
+    if (this.onPointerDown) {
+      this.scene.input.off('pointerdown', this.onPointerDown);
+      this.onPointerDown = undefined;
+    }
   }
 
   get active() {
     return this._active;
   }
 }
+
