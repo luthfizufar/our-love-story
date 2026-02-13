@@ -21,9 +21,9 @@ export class DialogSystem {
   private isTyping = false;
   private _active = false;
   private onComplete?: () => void;
-  private spaceKey: Phaser.Input.Keyboard.Key | null;
+  private spaceKey: Phaser.Input.Keyboard.Key;
   private container: Phaser.GameObjects.Container;
-  private clickZone: Phaser.GameObjects.Rectangle;
+  private hitZone: Phaser.GameObjects.Rectangle;
 
   constructor(scene: Phaser.Scene) {
     this.scene = scene;
@@ -70,20 +70,19 @@ export class DialogSystem {
       repeat: -1,
     });
 
-    this.clickZone = scene.add.rectangle(w / 2, h / 2, w, h, 0x000000, 0);
-    this.clickZone.setInteractive({ useHandCursor: true });
-    this.clickZone.on('pointerdown', () => this.handleAdvance());
+    this.hitZone = scene.add.rectangle(w / 2, h / 2, w, h, 0x000000, 0);
+    this.hitZone.setDepth(101);
+    this.hitZone.setScrollFactor(0);
+    this.hitZone.setVisible(false);
 
     this.container = scene.add.container(0, 0, [
-      this.bg, this.nameText, this.bodyText, this.promptText, this.clickZone,
+      this.bg, this.nameText, this.bodyText, this.promptText,
     ]);
     this.container.setDepth(100);
     this.container.setScrollFactor(0);
     this.container.setVisible(false);
 
-    this.spaceKey = scene.input.keyboard
-      ? scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE)
-      : null;
+    this.spaceKey = scene.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
   }
 
   start(entries: DialogEntry[], onComplete?: () => void) {
@@ -92,8 +91,9 @@ export class DialogSystem {
     this.onComplete = onComplete;
     this._active = true;
     this.container.setVisible(true);
-    this.scene.game.registry.set('dialogAdvance', () => this.handleAdvance());
-    this.scene.game.events.emit('dialog-active');
+    this.hitZone.setVisible(true);
+    this.hitZone.setInteractive({ useHandCursor: true });
+    this.hitZone.on('pointerdown', this.handleAdvance, this);
     this.showEntry();
   }
 
@@ -152,7 +152,7 @@ export class DialogSystem {
 
   update() {
     if (!this._active) return;
-    if (this.spaceKey && Phaser.Input.Keyboard.JustDown(this.spaceKey)) {
+    if (Phaser.Input.Keyboard.JustDown(this.spaceKey)) {
       this.handleAdvance();
     }
   }
@@ -160,9 +160,10 @@ export class DialogSystem {
   hide() {
     this._active = false;
     this.container.setVisible(false);
+    this.hitZone.setVisible(false);
+    this.hitZone.off('pointerdown');
+    this.hitZone.disableInteractive();
     this.typingTimer?.destroy();
-    this.scene.game.registry.remove('dialogAdvance');
-    this.scene.game.events.emit('dialog-inactive');
   }
 
   get active() {
