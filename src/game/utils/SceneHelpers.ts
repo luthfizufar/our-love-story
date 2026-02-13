@@ -49,6 +49,12 @@ export interface GameInput {
     down: boolean;
     left: boolean;
     right: boolean;
+    /**
+     * Analog axis from on-screen joystick (range -1..1).
+     * x: -1 left, +1 right
+     * y: -1 up, +1 down
+     */
+    axis?: { x: number; y: number };
   };
 }
 
@@ -63,71 +69,39 @@ export function setupInput(scene: Phaser.Scene): GameInput {
     },
   };
 
-  // Simple heuristic: if layar lebih kecil (portrait / mobile),
-  // tambahkan tombol virtual di layar untuk kontrol sentuh.
-  const width = scene.scale.width;
-  const height = scene.scale.height;
-  const isMobileLike = width < 720 || height > width;
+  // Virtual input state that can be driven by an on-screen joystick (React overlay).
+  // Scenes subscribe to global game events so the joystick works across scene transitions.
+  const virtualState: NonNullable<GameInput['virtual']> = {
+    up: false,
+    down: false,
+    left: false,
+    right: false,
+    axis: { x: 0, y: 0 },
+  };
+  input.virtual = virtualState;
 
-  if (isMobileLike) {
-    const virtualState = {
-      up: false,
-      down: false,
-      left: false,
-      right: false,
-    };
+  const clamp = (v: number, min: number, max: number) => Math.max(min, Math.min(max, v));
+  const AXIS_TO_DIGITAL_THRESHOLD = 0.35;
 
-    input.virtual = virtualState;
+  const onJoystick = (payload: unknown) => {
+    const p = payload as { x?: unknown; y?: unknown } | null | undefined;
+    const x = typeof p?.x === 'number' ? p.x : 0;
+    const y = typeof p?.y === 'number' ? p.y : 0;
 
-    // Izinkan multi-touch (lebih dari 1 pointer)
-    scene.input.addPointer(1);
+    const cx = clamp(x, -1, 1);
+    const cy = clamp(y, -1, 1);
+    virtualState.axis = { x: cx, y: cy };
 
-    const buttonSize = Math.min(width, height) * 0.12;
-    const margin = 16;
-    const bottomY = height - buttonSize / 2 - margin;
+    virtualState.left = cx < -AXIS_TO_DIGITAL_THRESHOLD;
+    virtualState.right = cx > AXIS_TO_DIGITAL_THRESHOLD;
+    virtualState.up = cy < -AXIS_TO_DIGITAL_THRESHOLD;
+    virtualState.down = cy > AXIS_TO_DIGITAL_THRESHOLD;
+  };
 
-    // Helper untuk membuat tombol transparan dengan label
-    const createButton = (
-      x: number,
-      y: number,
-      label: string,
-      dir: keyof typeof virtualState,
-    ) => {
-      const rect = scene.add
-        .rectangle(x, y, buttonSize, buttonSize, 0x000000, 0.3)
-        .setScrollFactor(0)
-        .setDepth(100)
-        .setInteractive({ useHandCursor: true });
-
-      scene.add
-        .text(x, y, label, {
-          fontSize: `${Math.max(10, buttonSize * 0.4)}px`,
-          fontFamily: '"Press Start 2P", monospace',
-          color: '#FFFFFF',
-        })
-        .setOrigin(0.5)
-        .setScrollFactor(0)
-        .setDepth(101);
-
-      const setDown = (down: boolean) => {
-        virtualState[dir] = down;
-      };
-
-      rect.on('pointerdown', () => setDown(true));
-      rect.on('pointerup', () => setDown(false));
-      rect.on('pointerout', () => setDown(false));
-      rect.on('pointerupoutside', () => setDown(false));
-    };
-
-    // D-pad kiri bawah
-    const leftCenterX = margin + buttonSize * 1.5;
-    const leftCenterY = bottomY;
-
-    createButton(leftCenterX, leftCenterY, '⬆', 'up');
-    createButton(leftCenterX, leftCenterY + buttonSize + 8, '⬇', 'down');
-    createButton(leftCenterX - buttonSize - 8, leftCenterY + (buttonSize + 8) / 2, '⬅', 'left');
-    createButton(leftCenterX + buttonSize + 8, leftCenterY + (buttonSize + 8) / 2, '➡', 'right');
-  }
+  scene.game.events.on('virtual-joystick', onJoystick);
+  scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+    scene.game.events.off('virtual-joystick', onJoystick);
+  });
 
   return input;
 }
@@ -146,6 +120,22 @@ export function handleMovement(
   let vy = 0;
 
   const v = input.virtual;
+  const axis = v?.axis;
+
+  // Prefer analog axis if joystick is being used.
+  if (axis) {
+    const ax = axis.x ?? 0;
+    const ay = axis.y ?? 0;
+    const deadzone = 0.18;
+    if (Math.abs(ax) > deadzone || Math.abs(ay) > deadzone) {
+      // Clamp magnitude so diagonal doesn't exceed 1.0
+      const len = Math.hypot(ax, ay);
+      const nx = len > 1 ? ax / len : ax;
+      const ny = len > 1 ? ay / len : ay;
+      player.setVelocity(nx * speed, ny * speed);
+      return;
+    }
+  }
 
   if (input.cursors.left.isDown || input.wasd.left.isDown || v?.left) vx = -speed;
   else if (input.cursors.right.isDown || input.wasd.right.isDown || v?.right) vx = speed;
