@@ -77,7 +77,7 @@ export default function VirtualJoystick({ visible, onChange, sizePx }: VirtualJo
 
   return (
     <div
-      className="absolute left-6 bottom-6 z-40 select-none"
+      className="absolute right-6 bottom-6 z-40 select-none"
       style={{ touchAction: 'none' }}
     >
       <div
