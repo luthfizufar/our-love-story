@@ -183,7 +183,7 @@ export class BootScene extends Phaser.Scene {
       strokeThickness: 4,
     }).setOrigin(0.5);
 
-    const sub = this.add.text(400, 230, 'A Valentine Web Adventure', {
+    const sub = this.add.text(400, 230, 'A Valentine Web Story', {
       fontSize: '11px',
       fontFamily: '"Press Start 2P", monospace',
       color: '#FF8BC1',
