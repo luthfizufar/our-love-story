@@ -1,0 +1,80 @@
+import Phaser from 'phaser';
+
+const TILE = 32;
+
+const COLORS: Record<number, number> = {
+  0: 0x8B7355,  // wood floor
+  1: 0x4A3728,  // wall
+  2: 0x3D8B37,  // grass
+  3: 0xC4B590,  // path/dirt
+  4: 0x1B5E20,  // tree
+  5: 0x5D4037,  // furniture
+  6: 0xD7CCC8,  // cafe floor
+  7: 0x6D4C41,  // cafe wall
+  8: 0x4E342E,  // counter
+  9: 0x795548,  // door marker (non-solid, visual)
+};
+
+const SOLID = new Set([1, 4, 5, 7, 8]);
+
+export function renderMap(scene: Phaser.Scene, map: number[][]): Phaser.Physics.Arcade.StaticGroup {
+  const walls = scene.physics.add.staticGroup();
+
+  for (let y = 0; y < map.length; y++) {
+    for (let x = 0; x < map[y].length; x++) {
+      const t = map[y][x];
+      const px = x * TILE + TILE / 2;
+      const py = y * TILE + TILE / 2;
+      const color = COLORS[t] ?? 0x333333;
+
+      if (SOLID.has(t)) {
+        const w = walls.create(px, py, 'tile') as Phaser.Physics.Arcade.Image;
+        w.setTint(color);
+        (w.body as Phaser.Physics.Arcade.StaticBody).setSize(TILE, TILE);
+        w.refreshBody();
+      } else {
+        scene.add.image(px, py, 'tile').setTint(color);
+      }
+    }
+  }
+  return walls;
+}
+
+export interface GameInput {
+  cursors: Phaser.Types.Input.Keyboard.CursorKeys;
+  wasd: Record<string, Phaser.Input.Keyboard.Key>;
+}
+
+export function setupInput(scene: Phaser.Scene): GameInput {
+  return {
+    cursors: scene.input.keyboard!.createCursorKeys(),
+    wasd: {
+      up: scene.input.keyboard!.addKey('W'),
+      down: scene.input.keyboard!.addKey('S'),
+      left: scene.input.keyboard!.addKey('A'),
+      right: scene.input.keyboard!.addKey('D'),
+    },
+  };
+}
+
+export function handleMovement(
+  player: Phaser.Physics.Arcade.Sprite,
+  input: GameInput,
+  dialogActive: boolean,
+) {
+  if (dialogActive) {
+    player.setVelocity(0, 0);
+    return;
+  }
+  const speed = 130;
+  let vx = 0;
+  let vy = 0;
+
+  if (input.cursors.left.isDown || input.wasd.left.isDown) vx = -speed;
+  else if (input.cursors.right.isDown || input.wasd.right.isDown) vx = speed;
+
+  if (input.cursors.up.isDown || input.wasd.up.isDown) vy = -speed;
+  else if (input.cursors.down.isDown || input.wasd.down.isDown) vy = speed;
+
+  player.setVelocity(vx, vy);
+}
