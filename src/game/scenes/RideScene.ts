@@ -51,7 +51,7 @@ export class RideScene extends Phaser.Scene {
 
     // Scene label
     this.add.text(400, 20, '🏍️ Malam yang Indah', {
-      fontSize: '10px',
+      fontSize: '8px',
       fontFamily: '"Press Start 2P", monospace',
       color: '#FF8BC1',
     }).setOrigin(0.5).setDepth(50);
