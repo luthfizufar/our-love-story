@@ -195,7 +195,7 @@ export class BootScene extends Phaser.Scene {
       color: '#FF6B96',
     }).setOrigin(0.5);
 
-    const prompt = this.add.text(400, 420, 'Tekan SPACE untuk memulai', {
+    const prompt = this.add.text(400, 420, 'Klik/Tap/Tekan SPACE untuk memulai', {
       fontSize: '10px',
       fontFamily: '"Press Start 2P", monospace',
       color: '#FF6B96',
