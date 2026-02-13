@@ -69,7 +69,7 @@ const LoveLetter = () => {
             textShadow: '0 0 20px rgba(255, 51, 84, 0.5)',
           }}
         >
-          Untuk Raina♥ Tersayang
+          Untuk Raina Tersayang 💕 
         </h2>
 
         <div className="w-24 h-0.5 mx-auto mb-8" style={{ background: 'linear-gradient(90deg, transparent, #FF6B96, transparent)' }} />
@@ -148,7 +148,7 @@ const LoveLetter = () => {
           color: '#FF6B96',
           opacity: 0.6,
         }}>
-          ~ Our Love: The RPG — Made with ♥ for Raina♥ ~
+          ~ Our Love: Looking Back. Made with ♥ for Raina♥ ~
         </div>
       </div>
     </div>
