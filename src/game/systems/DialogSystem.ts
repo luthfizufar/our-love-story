@@ -29,7 +29,7 @@ export class DialogSystem {
     this.scene = scene;
     const w = 800;
     const h = 600;
-    const boxH = 140;
+    const boxH = 120;
     const boxY = h - boxH - 10;
     const boxX = 10;
     const boxW = w - 20;
