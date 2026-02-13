@@ -231,9 +231,12 @@ export class BootScene extends Phaser.Scene {
         this.scene.start('HomeScene');
       });
     };
-    this.input.keyboard!.once('keydown-SPACE', startGame);
-    this.input.once('pointerdown', startGame);
-      });
-    });
+    if (this.input.keyboard) {
+      this.input.keyboard.once('keydown-SPACE', startGame);
+    }
+    const hitZone = this.add.rectangle(400, 300, 800, 600, 0x000000, 0);
+    hitZone.setInteractive({ useHandCursor: true });
+    hitZone.once('pointerdown', startGame);
   }
 }
+
