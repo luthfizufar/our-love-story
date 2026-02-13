@@ -132,7 +132,9 @@ export class DialogSystem {
 
   update() {
     if (!this._active) return;
-    if (Phaser.Input.Keyboard.JustDown(this.spaceKey)) {
+    const spacePressed = Phaser.Input.Keyboard.JustDown(this.spaceKey);
+    const pointerPressed = this.scene.input.activePointer.justDown;
+    if (spacePressed || pointerPressed) {
       if (this.isTyping) {
         this.skipTyping();
       } else {
