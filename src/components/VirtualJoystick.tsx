@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type PointerEventHandler } from 'react';
 
 export type VirtualJoystickAxis = { x: number; y: number };
 
@@ -52,14 +52,14 @@ export default function VirtualJoystick({ visible, onChange, sizePx }: VirtualJo
     onChange({ x: clamp(kx / max, -1, 1), y: clamp(ky / max, -1, 1) });
   };
 
-  const onPointerDown: React.PointerEventHandler<HTMLDivElement> = (e) => {
+  const onPointerDown: PointerEventHandler<HTMLDivElement> = (e) => {
     draggingRef.current = true;
     pointerIdRef.current = e.pointerId;
     (e.currentTarget as HTMLDivElement).setPointerCapture(e.pointerId);
     updateFromClientPoint(e.clientX, e.clientY);
   };
 
-  const onPointerMove: React.PointerEventHandler<HTMLDivElement> = (e) => {
+  const onPointerMove: PointerEventHandler<HTMLDivElement> = (e) => {
     if (!draggingRef.current) return;
     if (pointerIdRef.current !== null && e.pointerId !== pointerIdRef.current) return;
     updateFromClientPoint(e.clientX, e.clientY);
@@ -72,8 +72,8 @@ export default function VirtualJoystick({ visible, onChange, sizePx }: VirtualJo
     onChange({ x: 0, y: 0 });
   };
 
-  const onPointerUp: React.PointerEventHandler<HTMLDivElement> = () => endDrag();
-  const onPointerCancel: React.PointerEventHandler<HTMLDivElement> = () => endDrag();
+  const onPointerUp: PointerEventHandler<HTMLDivElement> = () => endDrag();
+  const onPointerCancel: PointerEventHandler<HTMLDivElement> = () => endDrag();
 
   return (
     <div
