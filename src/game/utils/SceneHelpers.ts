@@ -43,10 +43,17 @@ export function renderMap(scene: Phaser.Scene, map: number[][]): Phaser.Physics.
 export interface GameInput {
   cursors: Phaser.Types.Input.Keyboard.CursorKeys;
   wasd: Record<string, Phaser.Input.Keyboard.Key>;
+  // Optional virtual/touch controls for mobile
+  virtual?: {
+    up: boolean;
+    down: boolean;
+    left: boolean;
+    right: boolean;
+  };
 }
 
 export function setupInput(scene: Phaser.Scene): GameInput {
-  return {
+  const input: GameInput = {
     cursors: scene.input.keyboard!.createCursorKeys(),
     wasd: {
       up: scene.input.keyboard!.addKey('W'),
@@ -55,6 +62,74 @@ export function setupInput(scene: Phaser.Scene): GameInput {
       right: scene.input.keyboard!.addKey('D'),
     },
   };
+
+  // Simple heuristic: if layar lebih kecil (portrait / mobile),
+  // tambahkan tombol virtual di layar untuk kontrol sentuh.
+  const width = scene.scale.width;
+  const height = scene.scale.height;
+  const isMobileLike = width < 720 || height > width;
+
+  if (isMobileLike) {
+    const virtualState = {
+      up: false,
+      down: false,
+      left: false,
+      right: false,
+    };
+
+    input.virtual = virtualState;
+
+    // Izinkan multi-touch (lebih dari 1 pointer)
+    scene.input.addPointer(1);
+
+    const buttonSize = Math.min(width, height) * 0.12;
+    const margin = 16;
+    const bottomY = height - buttonSize / 2 - margin;
+
+    // Helper untuk membuat tombol transparan dengan label
+    const createButton = (
+      x: number,
+      y: number,
+      label: string,
+      dir: keyof typeof virtualState,
+    ) => {
+      const rect = scene.add
+        .rectangle(x, y, buttonSize, buttonSize, 0x000000, 0.3)
+        .setScrollFactor(0)
+        .setDepth(100)
+        .setInteractive({ useHandCursor: true });
+
+      scene.add
+        .text(x, y, label, {
+          fontSize: `${Math.max(10, buttonSize * 0.4)}px`,
+          fontFamily: '"Press Start 2P", monospace',
+          color: '#FFFFFF',
+        })
+        .setOrigin(0.5)
+        .setScrollFactor(0)
+        .setDepth(101);
+
+      const setDown = (down: boolean) => {
+        virtualState[dir] = down;
+      };
+
+      rect.on('pointerdown', () => setDown(true));
+      rect.on('pointerup', () => setDown(false));
+      rect.on('pointerout', () => setDown(false));
+      rect.on('pointerupoutside', () => setDown(false));
+    };
+
+    // D-pad kiri bawah
+    const leftCenterX = margin + buttonSize * 1.5;
+    const leftCenterY = bottomY;
+
+    createButton(leftCenterX, leftCenterY, '⬆', 'up');
+    createButton(leftCenterX, leftCenterY + buttonSize + 8, '⬇', 'down');
+    createButton(leftCenterX - buttonSize - 8, leftCenterY + (buttonSize + 8) / 2, '⬅', 'left');
+    createButton(leftCenterX + buttonSize + 8, leftCenterY + (buttonSize + 8) / 2, '➡', 'right');
+  }
+
+  return input;
 }
 
 export function handleMovement(
@@ -70,11 +145,13 @@ export function handleMovement(
   let vx = 0;
   let vy = 0;
 
-  if (input.cursors.left.isDown || input.wasd.left.isDown) vx = -speed;
-  else if (input.cursors.right.isDown || input.wasd.right.isDown) vx = speed;
+  const v = input.virtual;
 
-  if (input.cursors.up.isDown || input.wasd.up.isDown) vy = -speed;
-  else if (input.cursors.down.isDown || input.wasd.down.isDown) vy = speed;
+  if (input.cursors.left.isDown || input.wasd.left.isDown || v?.left) vx = -speed;
+  else if (input.cursors.right.isDown || input.wasd.right.isDown || v?.right) vx = speed;
+
+  if (input.cursors.up.isDown || input.wasd.up.isDown || v?.up) vy = -speed;
+  else if (input.cursors.down.isDown || input.wasd.down.isDown || v?.down) vy = speed;
 
   player.setVelocity(vx, vy);
 }
