@@ -11,21 +11,22 @@ const PhaserGame = () => {
   const [showLetter, setShowLetter] = useState(false);
 
   useEffect(() => {
-  if (!containerRef.current || gameRef.current) return;
+    if (!containerRef.current || gameRef.current) return;
 
-  const config: Phaser.Types.Core.GameConfig = {
-    ...gameConfig,
-    parent: containerRef.current,
-  };
-  const game = new Phaser.Game(config);
-  gameRef.current = game;
-  if (game.canvas) game.canvas.style.touchAction = 'none';
-
-  game.events.on('show-choice', () => setShowChoice(true));
-  game.events.on('show-letter', () => {
-    setShowChoice(false);
-    setShowLetter(true);
-  });
+    const config: Phaser.Types.Core.GameConfig = {
+      ...gameConfig,
+      parent: containerRef.current,
+    };
+    const game = new Phaser.Game(config);
+    gameRef.current = game;
+    game.events.once('ready', () => {
+      const canvas = game.canvas;
+      if (canvas) {
+        canvas.style.touchAction = 'none';
+        canvas.style.userSelect = 'none';
+        canvas.style.webkitTapHighlightColor = 'transparent';
+      }
+    });
       
     return () => {
       game.events.off('show-choice');
