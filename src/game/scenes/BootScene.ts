@@ -221,7 +221,7 @@ export class BootScene extends Phaser.Scene {
       rotate: { min: -30, max: 30 },
     });
 
-    this.input.keyboard!.once('keydown-SPACE', () => {
+    const startGame = () => {
       audioSystem.init();
       audioSystem.playBGM('boot');
       this.cameras.main.fadeOut(1000, 0, 0, 0);
@@ -229,6 +229,10 @@ export class BootScene extends Phaser.Scene {
         audioSystem.fadeOutBGM(500);
         audioSystem.playTransitionSfx();
         this.scene.start('HomeScene');
+      });
+    };
+    this.input.keyboard!.once('keydown-SPACE', startGame);
+    this.input.once('pointerdown', startGame);
       });
     });
   }
