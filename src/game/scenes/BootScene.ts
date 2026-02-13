@@ -175,7 +175,7 @@ export class BootScene extends Phaser.Scene {
     bg.fillGradientStyle(0x1a0005, 0x1a0005, 0x0a0000, 0x0a0000);
     bg.fillRect(0, 0, 800, 600);
 
-    const title = this.add.text(400, 180, 'Our Love: The RPG', {
+    const title = this.add.text(400, 180, 'Our Love: Looking back', {
       fontSize: '26px',
       fontFamily: '"Press Start 2P", monospace',
       color: '#FF3354',
