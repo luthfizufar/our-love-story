@@ -105,7 +105,7 @@ const ChoiceOverlay = ({ onChoose }: ChoiceOverlayProps) => {
           border: '1px solid rgba(255, 107, 150, 0.4)',
         }}
       >
-        Hmm, let me think...
+        Hmm, lemmeting... 🤔🤭
       </button>
     </div>
   );
