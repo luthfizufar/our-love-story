@@ -80,10 +80,10 @@ const LoveLetter = () => {
           lineHeight: '1.9',
           color: '#FFD5E0',
         }}>
-          <p>Raina♥ yang tercinta,</p>
+          <p>Raina yang tercinta ♥</p>
 
           <p>
-            Jika aku bisa memutar waktu, aku akan tetap memilih jalan yang sama —
+            Jika aku bisa memutar waktu, aku akan tetap memilih jalan yang sama, 
             jalan yang membawaku kepadamu. Karena di antara jutaan kemungkinan
             yang ada di dunia ini, bertemu denganmu adalah keajaiban paling
             indah yang pernah terjadi dalam hidupku.
@@ -93,7 +93,7 @@ const LoveLetter = () => {
             Kamu bukan hanya seseorang yang aku cintai. Kamu adalah rumah yang
             selalu aku rindukan, tempat di mana hatiku menemukan kedamaian yang
             sesungguhnya. Setiap tawa yang kamu berikan, setiap kata yang kamu
-            ucapkan, setiap momen yang kita lalui bersama — semuanya tersimpan
+            ucapkan, setiap momen yang kita lalui bersama, semuanya tersimpan
             rapi di sudut terindah dalam memoriku.
           </p>
 
@@ -101,7 +101,7 @@ const LoveLetter = () => {
             Aku ingat pertama kali melihatmu. Dunia serasa berhenti berputar.
             Dan sejak hari itu, setiap hari bersamamu terasa seperti hadiah
             yang tak ternilai harganya. Kamu mengajariku arti cinta yang
-            sesungguhnya — bukan hanya tentang perasaan, tapi tentang pilihan
+            sesungguhnya, bukan hanya tentang perasaan, tapi tentang pilihan
             untuk tetap bertahan, tetap berjuang, dan tetap mencintai.
           </p>
 
@@ -113,15 +113,15 @@ const LoveLetter = () => {
           </p>
 
           <p>
-            Kamu adalah bukti bahwa cinta sejati itu nyata. Dan aku berjanji —
-            dengan seluruh hatiku — untuk terus menjaga, mencintai, dan
+            Kamu adalah bukti bahwa cinta sejati itu nyata. Dan aku berjanji,
+            dengan seluruh hatiku untuk terus menjaga, mencintai, dan
             membahagiakan kamu. Bukan hanya hari ini, tapi selamanya.
           </p>
 
           <p>
             Aku tidak tahu apa yang akan terjadi di masa depan. Tapi satu hal
-            yang aku tahu pasti — aku ingin menjalani semuanya bersamamu.
-            Setiap tawa, setiap tangis, setiap petualangan baru — aku ingin
+            yang aku tahu pasti, aku ingin menjalani semuanya bersamamu.
+            Setiap tawa, setiap tangis, setiap petualangan baru, aku ingin
             kamu ada di sampingku.
           </p>
 
