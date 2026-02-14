@@ -149,6 +149,7 @@ export class AudioSystem {
 
   private startBGM(sceneKey: string) {
     this.stopBGM();
+    if (this.bgmGain) this.bgmGain.gain.value = sceneKey === 'final' ? 0.45 : 0.35;
     this.bgmPlaying = true;
 
     const melody = MELODIES[sceneKey] || MELODIES.boot;
