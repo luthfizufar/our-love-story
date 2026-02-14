@@ -222,13 +222,14 @@ export class BootScene extends Phaser.Scene {
     });
 
     const startGame = () => {
-      audioSystem.init();
-      audioSystem.playBGM('boot');
-      this.cameras.main.fadeOut(1000, 0, 0, 0);
-      this.cameras.main.once('camerafadeoutcomplete', () => {
-        audioSystem.fadeOutBGM(500);
-        audioSystem.playTransitionSfx();
-        this.scene.start('HomeScene');
+      audioSystem.unlock().then(() => {
+        audioSystem.playBGM('boot');
+        this.cameras.main.fadeOut(1000, 0, 0, 0);
+        this.cameras.main.once('camerafadeoutcomplete', () => {
+          audioSystem.fadeOutBGM(500);
+          audioSystem.playTransitionSfx();
+          this.scene.start('HomeScene');
+        });
       });
     };
     if (this.input.keyboard) {
