@@ -88,6 +88,27 @@ const BASS: Record<string, string[]> = {
   final: ['C3', 'G3', 'A3', 'F3', 'E3', 'A3', 'G3', 'C3'],
 };
 
+// Instrumen per scene: melody & bass wave type, overtone, envelope
+type OscType = OscillatorType;
+interface Instrument {
+  melodyWave: OscType;
+  melodyVol: number;
+  overtone?: { freqMul: number; vol: number }; // harmonic untuk richness
+  bassWave: OscType;
+  bassVol: number;
+  attack: number;
+  bpm: number;
+}
+
+const INSTRUMENTS: Record<string, Instrument> = {
+  boot: { melodyWave: 'square', melodyVol: 0.14, bassWave: 'square', bassVol: 0.08, attack: 0.02, bpm: 90 },
+  home: { melodyWave: 'triangle', melodyVol: 0.2, bassWave: 'triangle', bassVol: 0.1, attack: 0.06, bpm: 90 },
+  town: { melodyWave: 'sawtooth', melodyVol: 0.12, overtone: { freqMul: 1.5, vol: 0.03 }, bassWave: 'sine', bassVol: 0.12, attack: 0.04, bpm: 90 },
+  cafe: { melodyWave: 'sine', melodyVol: 0.2, overtone: { freqMul: 2, vol: 0.04 }, bassWave: 'triangle', bassVol: 0.1, attack: 0.08, bpm: 85 },
+  ride: { melodyWave: 'sine', melodyVol: 0.25, bassWave: 'sine', bassVol: 0.1, attack: 0.1, bpm: 60 },
+  final: { melodyWave: 'triangle', melodyVol: 0.2, overtone: { freqMul: 2.5, vol: 0.045 }, bassWave: 'sine', bassVol: 0.1, attack: 0.08, bpm: 56 },
+};
+
 export class AudioSystem {
   private ctx: AudioContext | null = null;
   private masterGain: GainNode | null = null;
@@ -154,17 +175,14 @@ export class AudioSystem {
 
     const melody = MELODIES[sceneKey] || MELODIES.boot;
     const bass = BASS[sceneKey] || BASS.boot;
-    const isRomantic = sceneKey === 'ride' || sceneKey === 'final';
-    const isPiano = sceneKey === 'final'; // Piano mellow untuk ending
-    const bpm = isRomantic ? 56 : 90;
-    const beatDur = 60 / bpm;
+    const inst = INSTRUMENTS[sceneKey] || INSTRUMENTS.boot;
+    const beatDur = 60 / inst.bpm;
 
     const loopMelody = () => {
       if (!this.bgmPlaying || !this.ctx || !this.bgmGain) return;
 
       let time = this.ctx.currentTime + 0.05;
 
-      // Play melody with soft sine wave
       for (const { note, duration } of melody) {
         if (!this.bgmPlaying) return;
         const freq = NOTES[note];
@@ -173,35 +191,33 @@ export class AudioSystem {
 
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
-        osc.type = isPiano ? 'triangle' : (isRomantic ? 'sine' : 'triangle');
+        osc.type = inst.melodyWave;
         osc.frequency.value = freq;
-        const vol = isPiano ? 0.2 : (isRomantic ? 0.25 : 0.18);
         gain.gain.setValueAtTime(0, time);
-        gain.gain.linearRampToValueAtTime(vol, time + (isPiano ? 0.08 : 0.05));
-        gain.gain.setValueAtTime(vol, time + dur - 0.12);
+        gain.gain.linearRampToValueAtTime(inst.melodyVol, time + inst.attack);
+        gain.gain.setValueAtTime(inst.melodyVol, time + dur - 0.12);
         gain.gain.linearRampToValueAtTime(0, time + dur);
         osc.connect(gain);
         gain.connect(this.bgmGain);
         osc.start(time);
         osc.stop(time + dur);
-        // Piano overtone: harmonic lembut untuk warmth
-        if (isPiano && freq < 600) {
-          const overtone = this.ctx.createOscillator();
+
+        if (inst.overtone && freq < 800) {
+          const ot = this.ctx.createOscillator();
           const otGain = this.ctx.createGain();
-          overtone.type = 'sine';
-          overtone.frequency.value = freq * 2.5;
+          ot.type = 'sine';
+          ot.frequency.value = freq * inst.overtone.freqMul;
           otGain.gain.setValueAtTime(0, time);
-          otGain.gain.linearRampToValueAtTime(0.04, time + 0.05);
+          otGain.gain.linearRampToValueAtTime(inst.overtone.vol, time + inst.attack * 0.6);
           otGain.gain.linearRampToValueAtTime(0, time + dur);
-          overtone.connect(otGain);
+          ot.connect(otGain);
           otGain.connect(this.bgmGain);
-          overtone.start(time);
-          overtone.stop(time + dur);
+          ot.start(time);
+          ot.stop(time + dur);
         }
         time += dur;
       }
 
-      // Play bass pad underneath
       let bassTime = this.ctx.currentTime + 0.05;
       const totalBeats = melody.reduce((s, n) => s + n.duration, 0);
       const bassDur = (totalBeats * beatDur) / bass.length;
@@ -212,11 +228,11 @@ export class AudioSystem {
 
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
-        osc.type = 'sine';
+        osc.type = inst.bassWave;
         osc.frequency.value = freq;
         gain.gain.setValueAtTime(0, bassTime);
-        gain.gain.linearRampToValueAtTime(0.12, bassTime + 0.1);
-        gain.gain.setValueAtTime(0.12, bassTime + bassDur - 0.15);
+        gain.gain.linearRampToValueAtTime(inst.bassVol, bassTime + 0.1);
+        gain.gain.setValueAtTime(inst.bassVol, bassTime + bassDur - 0.15);
         gain.gain.linearRampToValueAtTime(0, bassTime + bassDur);
         osc.connect(gain);
         gain.connect(this.bgmGain!);
