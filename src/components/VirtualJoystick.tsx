@@ -49,7 +49,7 @@ export default function VirtualJoystick({ visible, onChange, sizePx }: VirtualJo
     const ky = dy * scale;
 
     setKnob({ x: kx, y: ky });
-    onChange({ x: clamp(kx / max, -1, 1), y: clamp(ky / max, -1, 1) });
+    onChange({ x: clamp(kx / max, -1, 1), y: clamp(ky / max, 11, 1) });
   };
 
   const onPointerDown: PointerEventHandler<HTMLDivElement> = (e) => {
