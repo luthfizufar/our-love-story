@@ -65,14 +65,16 @@ const MELODIES: Record<string, MelodyNote[]> = {
     { note: 'E4', duration: 4 },
   ],
   final: [
-    // Ending lebih pelan dan penuh resolusi manis
-    { note: 'C4', duration: 3 }, { note: 'E4', duration: 1 },
-    { note: 'G4', duration: 3 }, { note: 'A4', duration: 1 },
-    { note: 'F4', duration: 4 },
-    { note: 'E4', duration: 2 }, { note: 'D4', duration: 2 },
-    { note: 'E4', duration: 4 },
-    { note: 'A4', duration: 3 }, { note: 'G4', duration: 1 },
-    { note: 'E4', duration: 2 }, { note: 'C4', duration: 4 },
+    // Melodi piano mellow & romantis untuk ending
+    { note: 'E4', duration: 2 }, { note: 'G4', duration: 1 }, { note: 'A4', duration: 3 },
+    { note: 'G4', duration: 1 }, { note: 'E4', duration: 2 }, { note: 'C4', duration: 2 },
+    { note: 'D4', duration: 1 }, { note: 'E4', duration: 1 }, { note: 'F4', duration: 3 },
+    { note: 'E4', duration: 1 }, { note: 'D4', duration: 2 }, { note: 'C4', duration: 4 },
+    { note: 'A4', duration: 2 }, { note: 'C5', duration: 1 }, { note: 'E5', duration: 3 },
+    { note: 'D5', duration: 1 }, { note: 'C5', duration: 2 }, { note: 'A4', duration: 2 },
+    { note: 'G4', duration: 2 }, { note: 'F4', duration: 2 }, { note: 'E4', duration: 4 },
+    { note: 'E4', duration: 2 }, { note: 'G4', duration: 1 }, { note: 'A4', duration: 3 },
+    { note: 'G4', duration: 1 }, { note: 'E4', duration: 2 }, { note: 'C4', duration: 4 },
   ],
 };
 
@@ -83,7 +85,7 @@ const BASS: Record<string, string[]> = {
   town: ['G3', 'C3', 'F3', 'G3'],
   cafe: ['A3', 'F3', 'C3', 'G3'],
   ride: ['E3', 'A3', 'B3', 'E3', 'A3', 'C4', 'B3', 'A3'],
-  final: ['C3', 'F3', 'A3', 'G3', 'C3'],
+  final: ['C3', 'G3', 'A3', 'F3', 'E3', 'A3', 'G3', 'C3'],
 };
 
 export class AudioSystem {
@@ -137,7 +139,8 @@ export class AudioSystem {
     const melody = MELODIES[sceneKey] || MELODIES.boot;
     const bass = BASS[sceneKey] || BASS.boot;
     const isRomantic = sceneKey === 'ride' || sceneKey === 'final';
-    const bpm = isRomantic ? 60 : 90;
+    const isPiano = sceneKey === 'final'; // Piano mellow untuk ending
+    const bpm = isRomantic ? 56 : 90;
     const beatDur = 60 / bpm;
 
     const loopMelody = () => {
@@ -154,16 +157,31 @@ export class AudioSystem {
 
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
-        osc.type = isRomantic ? 'sine' : 'triangle';
+        osc.type = isPiano ? 'triangle' : (isRomantic ? 'sine' : 'triangle');
         osc.frequency.value = freq;
+        const vol = isPiano ? 0.2 : (isRomantic ? 0.25 : 0.18);
         gain.gain.setValueAtTime(0, time);
-        gain.gain.linearRampToValueAtTime(isRomantic ? 0.25 : 0.18, time + 0.05);
-        gain.gain.setValueAtTime(isRomantic ? 0.25 : 0.18, time + dur - 0.08);
+        gain.gain.linearRampToValueAtTime(vol, time + (isPiano ? 0.08 : 0.05));
+        gain.gain.setValueAtTime(vol, time + dur - 0.12);
         gain.gain.linearRampToValueAtTime(0, time + dur);
         osc.connect(gain);
         gain.connect(this.bgmGain);
         osc.start(time);
         osc.stop(time + dur);
+        // Piano overtone: harmonic lembut untuk warmth
+        if (isPiano && freq < 600) {
+          const overtone = this.ctx.createOscillator();
+          const otGain = this.ctx.createGain();
+          overtone.type = 'sine';
+          overtone.frequency.value = freq * 2.5;
+          otGain.gain.setValueAtTime(0, time);
+          otGain.gain.linearRampToValueAtTime(0.04, time + 0.05);
+          otGain.gain.linearRampToValueAtTime(0, time + dur);
+          overtone.connect(otGain);
+          otGain.connect(this.bgmGain);
+          overtone.start(time);
+          overtone.stop(time + dur);
+        }
         time += dur;
       }
 
