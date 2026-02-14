@@ -11,6 +11,14 @@ export class FinalScene extends Phaser.Scene {
     this.cameras.main.fadeIn(2000, 0, 0, 0);
     audioSystem.playBGM('final');
 
+    const ensureBGMOnFirstTap = () => {
+      audioSystem.unlock().then(() => audioSystem.playBGM('final'));
+      this.input.off('pointerdown', ensureBGMOnFirstTap);
+      this.input.keyboard?.off('keydown', ensureBGMOnFirstTap);
+    };
+    this.input.once('pointerdown', ensureBGMOnFirstTap);
+    this.input.keyboard?.once('keydown', ensureBGMOnFirstTap);
+
     // Night background with gradient
     const bg = this.add.graphics();
     bg.fillGradientStyle(0x0a0020, 0x0a0020, 0x150008, 0x150008);
