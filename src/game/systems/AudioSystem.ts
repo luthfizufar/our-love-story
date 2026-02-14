@@ -121,18 +121,33 @@ export class AudioSystem {
     }
   }
 
-  private ensureCtx() {
+  private async ensureCtx(): Promise<boolean> {
     if (!this.ctx) return false;
     if (this.ctx.state === 'suspended') {
-      this.ctx.resume();
+      await this.ctx.resume();
     }
     return true;
   }
 
+  /** Panggil saat user pertama kali berinteraksi (klik/tap) untuk unlock audio */
+  async unlock() {
+    this.init();
+    return this.ensureCtx();
+  }
+
   playBGM(sceneKey: string) {
     this.init();
-    if (!this.ensureCtx() || !this.ctx || !this.bgmGain) return;
+    if (!this.ctx || !this.bgmGain) return;
 
+    const doPlay = async () => {
+      const ok = await this.ensureCtx();
+      if (!ok || !this.ctx || !this.bgmGain) return;
+      this.startBGM(sceneKey);
+    };
+    doPlay();
+  }
+
+  private startBGM(sceneKey: string) {
     this.stopBGM();
     this.bgmPlaying = true;
 
