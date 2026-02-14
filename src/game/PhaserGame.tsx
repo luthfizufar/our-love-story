@@ -13,6 +13,14 @@ const PhaserGame = () => {
   const baselineWidthRef = useRef<number | null>(null);
   const [showJoystick, setShowJoystick] = useState(false);
 
+const PhaserGame = () => {
+  const gameRef = useRef<Phaser.Game | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [showChoice, setShowChoice] = useState(false);
+  const [showLetter, setShowLetter] = useState(false);
+  const baselineWidthRef = useRef<number | null>(null);
+  const [showJoystick, setShowJoystick] = useState(false);
+
   useEffect(() => {
     if (!containerRef.current || gameRef.current) return;
 
@@ -22,19 +30,26 @@ const PhaserGame = () => {
     };
     const game = new Phaser.Game(config);
     gameRef.current = game;
+
+    const container = containerRef.current;
+    if (container) {
+      const unlockAudio = () => {
+        audioSystem.unlock();
+        container.removeEventListener('click', unlockAudio);
+        container.removeEventListener('touchstart', unlockAudio);
+        document.removeEventListener('keydown', unlockAudio);
+      };
+      container.addEventListener('click', unlockAudio, { once: true });
+      container.addEventListener('touchstart', unlockAudio, { once: true, passive: true });
+      document.addEventListener('keydown', unlockAudio, { once: true });
+    }
+
     game.events.once('ready', () => {
       const canvas = game.canvas;
       if (canvas) {
         canvas.style.touchAction = 'none';
         canvas.style.userSelect = 'none';
         canvas.style.webkitTapHighlightColor = 'transparent';
-        const unlockAudio = () => {
-          audioSystem.unlock();
-          canvas?.removeEventListener('click', unlockAudio);
-          canvas?.removeEventListener('touchstart', unlockAudio);
-        };
-        canvas.addEventListener('click', unlockAudio, { once: true });
-        canvas.addEventListener('touchstart', unlockAudio, { once: true });
       }
     });
 
