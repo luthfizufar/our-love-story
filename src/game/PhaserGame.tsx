@@ -28,6 +28,13 @@ const PhaserGame = () => {
         canvas.style.touchAction = 'none';
         canvas.style.userSelect = 'none';
         canvas.style.webkitTapHighlightColor = 'transparent';
+        const unlockAudio = () => {
+          audioSystem.unlock();
+          canvas?.removeEventListener('click', unlockAudio);
+          canvas?.removeEventListener('touchstart', unlockAudio);
+        };
+        canvas.addEventListener('click', unlockAudio, { once: true });
+        canvas.addEventListener('touchstart', unlockAudio, { once: true });
       }
     });
 
